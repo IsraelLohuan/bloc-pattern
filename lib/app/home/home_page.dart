@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10,),
             ElevatedButton(
-              onPressed: () =>  GetIt.instance<SearchCepBloc>().add(textController.text), 
+              onPressed: () =>  GetIt.instance<SearchCepBloc>().searchCep(textController.text), 
               child: Text('Obter CEP')  
             ),
             BlocBuilder<SearchCepBloc, SearchCepState>(

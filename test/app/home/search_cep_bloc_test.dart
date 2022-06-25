@@ -20,7 +20,7 @@ void main() {
   blocTest<SearchCepBloc, SearchCepState>(
     'deve retornar uma cidade quando passado o cep por parametro', 
     build: () => SearchCepBloc(dio),
-    act: (bloc) => bloc.add('57306840'),
+    act: (bloc) => bloc.searchCep('57306840'),
     expect: () => [
       isA<SearchCepLoading>(),
       SearchCepSuccess({})
