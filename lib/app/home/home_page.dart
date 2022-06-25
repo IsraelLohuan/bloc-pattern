@@ -1,6 +1,9 @@
 
 import 'package:bloc_application/app/home/search_cep_bloc.dart';
+import 'package:bloc_application/app/home/search_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -11,14 +14,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
-
-  final searchCepBloc = SearchCepBloc();
-
-  @override
-  void dispose() {
-    super.dispose();
-    searchCepBloc.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,21 +34,14 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10,),
             ElevatedButton(
-              onPressed: () => searchCepBloc.searchCep.add(textController.text), 
+              onPressed: () =>  GetIt.instance<SearchCepBloc>().add(textController.text), 
               child: Text('Obter CEP')  
             ),
-            StreamBuilder<SearchCepState>(
-              stream: searchCepBloc.cepResult,
-              builder: (context, snapshot) {
-
-                if(!snapshot.hasData) {
-                  return Container();
-                }
-
-                var state = snapshot.data!;
-
+            BlocBuilder<SearchCepBloc, SearchCepState>(
+              bloc: GetIt.instance<SearchCepBloc>(),
+              builder: (context, state) {
                 if(state is SearchCepError) {
-                  return Text('${snapshot.error}', style: TextStyle(color: Colors.red),);
+                  return Text(state.message, style: TextStyle(color: Colors.red),);
                 }
               
                 if(state is SearchCepLoading) {
@@ -61,8 +49,13 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 state = state as SearchCepSuccess;
+
+                if(state.data.isEmpty) {
+                  return Container();
+                }
+
                 return Text('Cidade: ${state.data['localidade']}');
-              },
+              }
             )
           ],
         ),
