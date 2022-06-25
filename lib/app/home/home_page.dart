@@ -1,4 +1,5 @@
-import 'package:dio/dio.dart';
+
+import 'package:bloc_application/app/home/search_cep_bloc.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,32 +12,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
 
-  var isLoading = false;
-  String? error;
+  final searchCepBloc = SearchCepBloc();
 
-  var cepResult = {};
-
-  Future<void> searchCep(String cep) async {
-    try {
-      cepResult = {};
-      error = null;
-      setState(() {
-        isLoading = true;
-      });
-
-      final response = await Dio().get('https://viacep.com.br/ws/$cep/json/');
-
-      setState(() {
-        cepResult = response.data;
-      });
-
-    } catch(e) {
-      error = 'Erro ao buscar CEP :|';
-    }
-
-    setState(() {
-      isLoading = false;
-    });
+  @override
+  void dispose() {
+    super.dispose();
+    searchCepBloc.dispose();
   }
 
   @override
@@ -58,12 +39,25 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10,),
             ElevatedButton(
-              onPressed: () => searchCep(textController.text), 
+              onPressed: () => searchCepBloc.searchCep.add(textController.text), 
               child: Text('Obter CEP')  
             ),
-            if (isLoading) Expanded(child: Center(child: CircularProgressIndicator(),),),
-            if (error != null) Text(error!, style: TextStyle(color: Colors.red),),
-            if (!isLoading && cepResult.isNotEmpty) Text('Cidade: ${cepResult['localidade']}')
+            StreamBuilder<Map>(
+              stream: searchCepBloc.cepResult,
+              builder: (context, snapshot) {
+                if(snapshot.hasError) {
+                  return Text('${snapshot.error}', style: TextStyle(color: Colors.red),);
+                }
+
+                if(!snapshot.hasData) {
+                  return Container();
+                }
+
+                final data = snapshot.data!;
+
+                return Text('Cidade: ${data['localidade']}');
+              },
+            )
           ],
         ),
       ),
