@@ -42,20 +42,26 @@ class _HomePageState extends State<HomePage> {
               onPressed: () => searchCepBloc.searchCep.add(textController.text), 
               child: Text('Obter CEP')  
             ),
-            StreamBuilder<Map>(
+            StreamBuilder<SearchCepState>(
               stream: searchCepBloc.cepResult,
               builder: (context, snapshot) {
-                if(snapshot.hasError) {
-                  return Text('${snapshot.error}', style: TextStyle(color: Colors.red),);
-                }
 
                 if(!snapshot.hasData) {
                   return Container();
                 }
 
-                final data = snapshot.data!;
+                var state = snapshot.data!;
 
-                return Text('Cidade: ${data['localidade']}');
+                if(state is SearchCepError) {
+                  return Text('${snapshot.error}', style: TextStyle(color: Colors.red),);
+                }
+              
+                if(state is SearchCepLoading) {
+                  return Expanded(child: Center(child: CircularProgressIndicator()),);
+                }
+
+                state = state as SearchCepSuccess;
+                return Text('Cidade: ${state.data['localidade']}');
               },
             )
           ],
