@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:rxdart/rxdart.dart';
 
 class SearchCepBloc {
 
   final _streamController = StreamController<String>.broadcast();
   Sink<String> get searchCep => _streamController.sink;
-  Stream<Map> get cepResult => _streamController.stream.asyncMap<Map>(_searchCep);
+  Stream<Map> get cepResult => _streamController.stream.switchMap(_searchCep);
 
-  Future<Map> _searchCep(String cep) async {
+  Stream<Map> _searchCep(String cep) async* {
     try {
       final response = await Dio().get('https://viacep.com.br/ws/$cep/json/');
-      return response.data;
+      yield response.data as Map;
     } catch(e) {
-      throw Exception('Erro na pesquisa!');
+      yield* Stream.error(Exception('Erro na pesquisa!'));
     }
   }
 
